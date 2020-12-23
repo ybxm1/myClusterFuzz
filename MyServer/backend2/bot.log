@@ -1,0 +1,88 @@
+INFO: Seed: 3723509191
+INFO: Loaded 1 modules   (36052 inline 8-bit counters): 36052 [0xce5678, 0xcee34c), 
+INFO: Loaded 1 PC tables (36052 PCs): 36052 [0x957b98,0x9e48d8), 
+INFO:       47 files found in /home/ybxm/MyClientFuzzers/jobprojects/libfuzzer/test/1/seeds
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 47 min: 3b max: 326b total: 1991b rss: 40Mb
+#48	INITED cov: 550 ft: 861 corp: 36/1819b exec/s: 0 rss: 44Mb
+#109	NEW    cov: 553 ft: 866 corp: 37/1852b lim: 326 exec/s: 0 rss: 47Mb L: 33/326 MS: 1 InsertByte-
+#237	NEW    cov: 554 ft: 868 corp: 38/1879b lim: 326 exec/s: 0 rss: 52Mb L: 27/326 MS: 3 ChangeBit-CopyPart-ChangeBinInt-
+#1893	REDUCE cov: 554 ft: 868 corp: 38/1878b lim: 342 exec/s: 0 rss: 122Mb L: 12/326 MS: 1 EraseBytes-
+#2109	NEW    cov: 554 ft: 869 corp: 39/2204b lim: 342 exec/s: 0 rss: 132Mb L: 326/326 MS: 1 CMP- DE: "3DES"-
+#3300	REDUCE cov: 554 ft: 869 corp: 39/2203b lim: 350 exec/s: 0 rss: 182Mb L: 15/326 MS: 1 CrossOver-
+#3788	REDUCE cov: 554 ft: 869 corp: 39/2196b lim: 350 exec/s: 0 rss: 203Mb L: 20/326 MS: 3 CopyPart-PersAutoDict-EraseBytes- DE: "3DES"-
+#4964	REDUCE cov: 554 ft: 869 corp: 39/2192b lim: 358 exec/s: 0 rss: 253Mb L: 13/326 MS: 1 EraseBytes-
+=================================================================
+==9889==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x629000009748 at pc 0x000000522717 bp 0x7ffe4e2165f0 sp 0x7ffe4e215db8
+READ of size 62978 at 0x629000009748 thread T0
+    #0 0x522716 in __asan_memcpy /src/llvm-project/compiler-rt/lib/asan/asan_interceptors_memintrinsics.cpp:22:3
+    #1 0x565333 in tls1_process_heartbeat /out/cf/openssl-1.0.1f/ssl/t1_lib.c:2586:3
+    #2 0x5d0f9a in ssl3_read_bytes /out/cf/openssl-1.0.1f/ssl/s3_pkt.c:1092:4
+    #3 0x5d54a3 in ssl3_get_message /out/cf/openssl-1.0.1f/ssl/s3_both.c:457:7
+    #4 0x5a0c62 in ssl3_get_client_hello /out/cf/openssl-1.0.1f/ssl/s3_srvr.c:941:4
+    #5 0x59cb21 in ssl3_accept /out/cf/openssl-1.0.1f/ssl/s3_srvr.c:357:9
+    #6 0x5560a0 in LLVMFuzzerTestOneInput /out/cf/handshake-fuzzer.cc:66:3
+    #7 0x45a5d1 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:595:15
+    #8 0x459b1a in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:503:3
+    #9 0x45b7c7 in fuzzer::Fuzzer::MutateAndTestOne() /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:741:19
+    #10 0x45c255 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:879:5
+    #11 0x44b5d4 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:902:6
+    #12 0x473742 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #13 0x7f6c54fb8b96 in __libc_start_main /build/glibc-2ORdQG/glibc-2.27/csu/../csu/libc-start.c:310
+    #14 0x420978 in _start (/home/ybxm/MyClientFuzzers/jobprojects/libfuzzer/test/1/handshake-fuzzer+0x420978)
+
+0x629000009748 is located 0 bytes to the right of 17736-byte region [0x629000005200,0x629000009748)
+allocated by thread T0 here:
+    #0 0x52336d in malloc /src/llvm-project/compiler-rt/lib/asan/asan_malloc_linux.cpp:145:3
+    #1 0x6055db in CRYPTO_malloc /out/cf/openssl-1.0.1f/crypto/mem.c:308:8
+    #2 0x5d6ba7 in freelist_extract /out/cf/openssl-1.0.1f/ssl/s3_both.c:708:12
+    #3 0x5d6ba7 in ssl3_setup_read_buffer /out/cf/openssl-1.0.1f/ssl/s3_both.c:770:10
+    #4 0x5d71bc in ssl3_setup_buffers /out/cf/openssl-1.0.1f/ssl/s3_both.c:827:7
+    #5 0x59d74f in ssl3_accept /out/cf/openssl-1.0.1f/ssl/s3_srvr.c:292:9
+    #6 0x5560a0 in LLVMFuzzerTestOneInput /out/cf/handshake-fuzzer.cc:66:3
+    #7 0x45a5d1 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:595:15
+    #8 0x45bac6 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:788:3
+    #9 0x45bf59 in fuzzer::Fuzzer::Loop(std::__Fuzzer::vector<fuzzer::SizedFile, fuzzer::fuzzer_allocator<fuzzer::SizedFile> >&) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerLoop.cpp:841:3
+    #10 0x44b5d4 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerDriver.cpp:902:6
+    #11 0x473742 in main /src/llvm-project/compiler-rt/lib/fuzzer/FuzzerMain.cpp:20:10
+    #12 0x7f6c54fb8b96 in __libc_start_main /build/glibc-2ORdQG/glibc-2.27/csu/../csu/libc-start.c:310
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /src/llvm-project/compiler-rt/lib/asan/asan_interceptors_memintrinsics.cpp:22:3 in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c527fff9290: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c527fff92a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c527fff92b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c527fff92c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c527fff92d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c527fff92e0: 00 00 00 00 00 00 00 00 00[fa]fa fa fa fa fa fa
+  0x0c527fff92f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c527fff9300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c527fff9310: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c527fff9320: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c527fff9330: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==9889==ABORTING
+MS: 1 ChangeBinInt-; base unit: 464620007f9d4195def778a9f2648d2e67c2c90b
+0x18,0x3,0x0,0x0,0x4,0x1,0xf6,0x2,0xfd,0x55,0xbc,0xbc,
+\x18\x03\x00\x00\x04\x01\xf6\x02\xfdU\xbc\xbc
+artifact_prefix='./'; Test unit written to ./crash-7ec62939134a5e7fe90770bba0aa5e4189cfb6d8
+Base64: GAMAAAQB9gL9Vby8

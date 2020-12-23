@@ -1,0 +1,126 @@
+1. ubuntu18.04 install mysql: https://jingyan.baidu.com/article/ff42efa97d989c809f22026f.html
+2. https://www.cnblogs.com/williamjie/p/11126486.html # 重设密码
+3. create user
+use mysql;
+GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON TUTORIALS.* TO 'test'@'localhost' IDENTIFIED BY 'test';  
+grant all privileges on *.* to 'test'@'localhost' identified by 'test' with grant option;
+
+
+4. 创建任务表
+create table jobs(
+id int(20) primary key NOT NULL AUTO_INCREMENT,
+name char(30),
+fuzzer char(15),
+botnum int,
+
+surplusnum int COMMENT '任务剩余数',
+completenum int COMMENT '任务完成度',
+
+time int,
+exec char(20),
+jobpath varchar(100), 
+crashnum int,
+createtime datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+);
+# 已经运行完成了的
+insert into jobs() values( default, "test1", "libfuzzer", 1, 0, 1, 60, "handshake-fuzzer", "/home/ybxm/myClusterFuzz/MyServer/jobprojects/test", 1, default);
+# 还在运行中的
+insert into jobs() values( default, "test2", "libfuzzer", 1, 1, 0, 60, "handshake-fuzzer", "/home/ybxm/myClusterFuzz/MyServer/jobprojects/test2", 1, default);
+# 修改jobpath的长度
+alter table jobs change jobpath archid char(100) after exec;
+alter table jobs change archid jobpath char(100) after exec;
+insert into crashes values(default, "test_A1_2020-12-13_crash", "test", "/home/ybxm/myClusterFuzz/MyServer/jobprojects/test/crashs");
+
+
+5. 创建漏洞库表
+create table crashes(
+id int(20) primary key NOT NULL AUTO_INCREMENT,
+name char(60) ,
+jobid int,
+crashpath varchar(100),
+
+isfix int,
+
+findtime datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+);
+name: 任务名_节点名_crash_num  # num是当前crash目录下的漏洞个数+1,避免文件名冲突
+name+"info"就是该漏洞对应的漏洞详细信息的文件名
+isfix: 1已经修复，0未修复，default 0
+alter table crashes change crashpath crashpath char(100) after jobname;
+insert into crashes values(default, "test_B1_crash_2", "test", "/home/ybxm/myClusterFuzz/MyServer/jobprojects/test/crashs", "0", default);
+
+
+6. 创建节点表
+create table nodes(
+id int primary key NOT NULL AUTO_INCREMENT,
+name char(20),
+ipaddr char(20),
+men int,  // GB
+corenum int,
+
+jobid int(20),
+fetchtime datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '节点提取任务时间',
+last_modify_time datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '最后活跃时间',
+
+createtime datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+);
+jobid 0代表空闲，非0代表任务id,繁忙
+insert into nodes values(default, "A1", "192.168.128.129", 2, 4, 1, default, default, default);
+insert into nodes values(default, "B1", "192.168.128.130", 2, 4, 2, default, default, default);
+
+
+
+
+7. 创建漏洞复现任务表
+create table reproduce(
+id int primary key NOT NULL AUTO_INCREMENT,
+name char(20),
+fuzzer char(15),
+crashname char(60),
+exec char(20),
+jobpath varchar(100), 
+
+isfetch int,
+completed int,
+isfixed int,
+
+createtime datetime null DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+);
+
+isfetch 1已有节点获取任务，0还没有节点获取任务
+completed 是否已经验证完成，0不是，1已完成
+isfixed 漏洞是否已经修复，0未修复，1已修复
+
+
+
+
+
+
+
+insert into job() values( default, "test", "libfuzzer", "time:60", "/home/ybxm/MyServer/jobprojects/test", 1, 10, "fuzz", default);
+insert into archive() values( default, "openssl-fuzzer-build.zip", 1, "/home/ybxm/MyServer/jobprojects/test/1/", default);
+
+
+alter table job add tasknum int not null after archname;
+alter table job add type char(10) not null after tasknum;
+
+alter table job modify tasknum int not null;
+alter table job drop ;
+
+alter table job change archname archid int(20) after jobpath;
+
+insert into node() values(default, "test", 0, 0, default, default)
+
+alter table archive add execname char(30) after name;
+
+alter table crashes change jobname jobid int(20) after name;
+
+
+
+
+
+
+
+
+
+
