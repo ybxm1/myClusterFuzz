@@ -128,6 +128,42 @@ def post_job_compelte():
     print(nodename + " has complete the job: " + jobname)
     return "操作成功！"
 
+
+@postinfo.route("/postreproducecomplete", methods=["POST"])
+def post_reproduce_complete():
+    jobname = request.form["jobname"]
+    nodename = request.form["nodename"]
+    crashname = request.form["crashname"]
+    isfix = request.form["isfix"]  # python默认以str接收数据，除非是mysql中的数据,数字才会以int的形式出现
+    # print(type(isfix))
+
+    if isfix == 1:
+        isfixed = '1' # 漏洞已修复
+    else:
+        isfixed = "0"
+
+    # 更新reproduce中的completed和isfixed
+    reproduce_update_compAndisf_sql = "update reproduce set completed = 1, isfixed = " + isfixed + " where name = '" + jobname + "'"
+    print(reproduce_update_compAndisf_sql)
+    res = exec_sql(reproduce_update_compAndisf_sql)
+    print(res)
+
+    # 如果漏洞已经修复，就更新crashes中的对应字段
+    if isfixed == '1':
+        crashes_update_isfix_sql = "update crashes set isfix = " + isfixed + " where name = '" + crashname + "'"
+
+    # 更新node的jobid
+    nodes_update_jobid_sql = "update nodes set jobid = 0 where name = '" + nodename + "'"
+    res2 = exec_sql(nodes_update_jobid_sql)
+    print(res2)
+
+    print(nodename + " has complete the job: " + jobname)
+    return "操作成功！"
+
+"""
+{"jobname": jobname, "nodename": nodename, "crashname": crashname, "isfix": isfix}
+"""
+
 """
 1. https://www.cnblogs.com/l-h-x/p/9026540.html  # 服务器端接收来自客户端的数据信息
 """

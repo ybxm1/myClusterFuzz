@@ -114,12 +114,10 @@ class LibfuzzerEngine(engine.Engine):
 
 
   def reproduce(self, target_path, crash_path):
-      cmd = target_path + " " + crash_path
-      pro = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-      for i in iter(pro.stdout.readline, ''):
-          if len(i) < 1:
-              break
-          print(i.decode('utf-8').strip())
+      cmd = (target_path + " " + crash_path).split(" ")
+      with open("./reproduce_result.txt", "ab") as out:  # 追加，文件不存在就创建
+          pro = subprocess.Popen(cmd, stderr=out)  # 异常对象无法在异常块作用域外访问
+      time.sleep(8)
 
 
 """

@@ -100,21 +100,21 @@ def get_archive():
     else:  # fuzz
         sql = "select jobpath from jobs where name = '" + name + "'"
     results = exec_sql(sql)
+    # print(results)
     path = results[0][0]
     return send_from_directory(r"" + path + "", filename=name+".zip", as_attachment=True)
 
 
 @requestjob.route("/getcrash", methods=["GET", "POST"])  # must use 'GET', if you use 'POST', you will get http-405
 def get_crash():
-    # type = request.args.get("type")
-    # name = request.args.get("name")
-    # if type == "reproduce":
-    #     sql = "select jobpath from reproduce where name = '" + name + "'"
-    # else:  # fuzz
-    #     sql = "select jobpath from jobs where name = '" + name + "'"
-    # results = exec_sql(sql)
-    # path = results[0][0]
-    return send_from_directory(r"" + path + "", filename=name + ".zip", as_attachment=True)
+    name = request.args.get("name")  # 漏洞名
+    # print(name)
+    sql = "select crashpath from crashes where name = '" + name + "'"
+    # print(sql)
+    results = exec_sql(sql)
+    path = results[0][0]
+    # print(path)
+    return send_from_directory(r"" + path + "", filename=name , as_attachment=True)
 
     # # data = request.get_json().decode()
     # archid = request.args.get("archid")

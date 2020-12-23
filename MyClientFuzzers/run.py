@@ -31,10 +31,12 @@ save_path = "/"  # 当前任务的path
 url_get_job = "http://localhost:5001/cget/getjob?"
 url_get_arch = "http://localhost:5001/cget/getarch?"
 url_get_seeds = "http://localhost:5001/cget/getseeds?"
+url_get_rep_crash = "http://localhost:5001/cget/getcrash?"
 url_post_crash = "http://localhost:5001/cpost/postcrash"
 url_post_info = "http://localhost:5001/cpost/postinfo"
 url_post_seed = "http://localhost:5001/cpost/postseed"
 url_post_jobcomplete = "http://localhost:5001/cpost/postjobcomplete"
+url_post_reproducecomplete = "http://localhost:5001/cpost/postreproducecomplete"
 
 
 logger = logging.getLogger(__name__)
@@ -113,8 +115,16 @@ def extract(save_path, name, execname):
         return False
 
 
-def get_crash(name):  # 漏洞复现的时候使用
-    pass
+def get_crash(crashname):  # 漏洞复现的时候使用
+    data = [("name", crashname)]
+    url = url_get_rep_crash + urllib.parse.urlencode(data)
+    print(url)
+
+    f = req.urlopen(url)
+    data = f.read()
+    with open(save_path + crashname, 'wb') as code:
+        code.write(data)
+    print("get crash success!")
 
 
 def fuzz(fuzzer, execname, runtime, surplusum, jobname):
@@ -140,17 +150,31 @@ def fuzz(fuzzer, execname, runtime, surplusum, jobname):
         print("Honggfuzz run out successfully!")
 
 
-def reproduce():
-    pass
+def reproduce(fuzzer, execname, jobname, crashname):
+    target = save_path + execname
+    crash_path = save_path + crashname
+    if fuzzer == "AFL":
+        print("Afl run out successfully!")
+        # print("Afl run out successfully!")
+    elif fuzzer == "Libfuzz":
+        libfuzz = libfuzzer.LibfuzzerEngine()
+        libfuzz.reproduce(target, crash_path)  # nodename全局变量
+        logger.info(jobname + " run out successfully")
+        # print("Libfuzz run out successfully!")
+    elif fuzzer == "Honggfuzz":
+        print("Honggfuzz run out successfully!")
+        # print("Honggfuzz run out successfully!")
 
 
-def task_type(type, jobname, fuzzername, execname, runtime, surplusum):
+# 依据不同的任务类型来完成不同的任务
+def task_type(type, jobname, fuzzername, execname, runtime, surplusum, crashname):
     if type == "fuzz":
         # print("job: " + jobname + " is running!")
         logger.info("job: " + jobname + " is running!")
         fuzz(fuzzername, execname, runtime, surplusum, jobname)
     elif type == "reproduce":
-        pass
+        logger.info("reproduce: " + jobname + " is running!")
+        reproduce(fuzzername, execname, jobname, crashname)
     else:
         print("Don't know the job type.")
 
@@ -274,6 +298,13 @@ def job_complete(jobname):
     res = requests.post(url_post_jobcomplete, data=data)
     print(res.text)
 
+
+def reproduce_complete(jobname, isfix, crashname):
+    data = {"jobname": jobname, "nodename": nodename, "crashname": crashname, "isfix": isfix}
+    res = requests.post(url_post_reproducecomplete, data=data)
+    print(res.text)
+
+
 if __name__ == '__main__':
     # 同步函数测试
     # save_path = "/home/ybxm/MyClientFuzzers/jobprojects/libfuzzer/test/1/"
@@ -298,16 +329,19 @@ if __name__ == '__main__':
         # 下载固件
         if job["type"] == "reproduce":
             res1 = get_archive("reproduce", job["name"], job["fuzzer"], job["exec"])
-            res2 = get_crash(job["name"])  # 未实现
+            res2 = get_crash(job["crashname"])
         elif job["type"] == "fuzz":
             res1 = get_archive("fuzz", job["name"], job["fuzzer"], job["exec"])
 
         # 开始fuzz
         runtime = 1
         surplusum = 1
+        crashname = ''
         if job["type"] == "fuzz":
             runtime = job["time"]  # if中的变量可以在if外使用
             surplusum = job["surplusnum"]
+        else:
+            crashname = job["crashname"]
 
         # test libfuzz directly
         # x global save_path
@@ -317,11 +351,11 @@ if __name__ == '__main__':
         print("thread start")
         logger.info("fuzz process start!")
         p1 = multiprocessing.Process(target=task_type, args=(job["type"], job["name"], job["fuzzer"],\
-                                 job["exec"], runtime, surplusum))
+                                 job["exec"], runtime, surplusum, crashname))
         p1.start()
         # time.sleep(80)
 
-        # fuzz类型的信息同步
+        # fuzz类型的信息同步/上传漏洞复现结果
         if job["type"] == "fuzz":
             # if True:  # job["type"] == "fuzz"
             crash_number = 0
@@ -337,7 +371,28 @@ if __name__ == '__main__':
                 time.sleep(time_sync)  # 每隔30秒同步一次，可以按需要设置
             job_complete(job["name"])  # 时间一到，就会发送任务完成请求
         else:  # reproduce
-            pass
+            start_time = time.time()
+            f_rep = 0
+            while time.time() - start_time < 20:
+                reproduce_file = save_path + "reproduce_result.txt"
+                print(reproduce_file)
+                if os.path.isfile(reproduce_file):  # reproduce已经完成
+                    time.sleep(1)
+                    f1 = open(reproduce_file, "r")
+                    logger.info("reproduce_result.txt文件打开成功！")
+                    tem = f1.read()
+                    context = tem.split("\n")
+                    for j in context:
+                        # print(j)
+                        if "========" in j:
+                            f_rep += 2  # 漏洞未修复
+                            break
+                    f_rep += 1  # 漏洞已修复
+                if f_rep > 0:
+                    break
+                time.sleep(3)
+            reproduce_complete(job["name"], f_rep, job["crashname"])
+
 
         print(job["name"] + " 已经完成！")
 
@@ -357,8 +412,8 @@ if __name__ == '__main__':
 
         # resp = jsonify({"exist": "yes", "type": "reproduce", "name": rep[0][1], "fuzzer": rep[0][2],\
         #                 "crashname": rep[0][3], "exec": rep[0][4]})
-        # resp = jsonify({"exist": "yes", "type": "fuzz", "name": job[0][1], "fuzzer": job[0][2],\
-        #                 "time": job[0][6], "exec": job[0][7]})
+        # resp = jsonify({"exist": "yes", "type": "fuzz",      "name": job[0][1], "fuzzer": job[0][2], \
+        #                 "time": job[0][6], "exec": job[0][7], "surplusnum": job[0][4]})
 
         # try:  # 从主节点下载固件，并将其解压以及创建相关文件目录
         #     res = get_archive(job["archid"], job["fuzzername"], job["jobname"], job["archversion"],\

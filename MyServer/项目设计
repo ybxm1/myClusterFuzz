@@ -51,6 +51,8 @@ backend2的任务分配中设置一个flag，交替分配任务给子节点，�
 前端问题：
 1. reproduce页面中任务创建成功跳转后无法实时显示最新信息？
 2. 漏洞信息与日志信息显示的时候，无法换行的问题？
+3. 任务创建的时候需要添加条件限制
+4. 换页符号箭头呈现白色
 
 
 需要添加的东西：
@@ -83,9 +85,11 @@ backend2:
 
 
 
-handshake-fuzzer
-
-
+任务规划：
+1. reproduce实现  //success
+2. 双节点测试　//success
+3. afl、honggfuzz
+4. 一个节点多次取任务
 
 
 
@@ -112,8 +116,8 @@ info_path = info + nodename + "_" + surplusum + ".log"
 """
 
 
-
-
+crash-2885f8ae7984cd88da46c6fee0413fee1a9f7b24
+crash-2885f8ae7984cd88da46c6fee0413fee1a9f7b24
 
 
 

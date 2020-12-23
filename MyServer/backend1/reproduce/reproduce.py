@@ -37,7 +37,7 @@ def create_reproduce():
     print(job_info)
 
     jobpath = pref_path + jobname
-    file_save_path = jobpath + "/" + jobname
+    file_save_path = jobpath + "/" + jobname + ".zip"
     if os.path.isdir(jobpath):
         print("任务已存在！")
         return jsonify({
