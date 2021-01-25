@@ -91,7 +91,7 @@ isfetch 1已有节点获取任务，0还没有节点获取任务
 completed 是否已经验证完成，0不是，1已完成
 isfixed 漏洞是否已经修复，0未修复，1已修复
 
-
+insert into reproduce values(default, "test", "honggfuzz", "crash123456", "crash123456", 1, 1, 0, default);
 
 
 

@@ -22,9 +22,18 @@ app.register_blueprint(joblist, url_prefix='/joblist')
 app.register_blueprint(reproduce, url_prefix='/reproduce')
 app.register_blueprint(crashes, url_prefix='/crashes')
 
+
 @app.route('/')
 def index():
     return "hello world!"
 
+"""
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+"""
+
+
 if __name__ == "__main__":
     app.run(host="localhost", port="5000")  
+    # app.run(host="0.0.0.0", port="5000")  # 远程访问的时候用的

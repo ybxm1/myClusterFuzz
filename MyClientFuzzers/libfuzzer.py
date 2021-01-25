@@ -62,7 +62,7 @@ class LibfuzzerEngine(engine.Engine):
                               os.remove("./" + i)  # 删除当前目录下的crash文件
                               continue
                           shutil.move("./" + i, output)
-                          crashlog += i
+                          crashlog += i  # 漏洞详细信息
                           # print(crashlog)
                           # print("漏洞移动成功")
                           logger.info(crashlog)
@@ -70,6 +70,7 @@ class LibfuzzerEngine(engine.Engine):
 
                   if crashexist == 1:
                       continue
+
                   # 从bot日志中读取漏洞对应的漏洞信息文件，并将其与漏洞存在一起
                   nowcrash = 0
                   flag = 0

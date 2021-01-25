@@ -193,3 +193,5 @@ export const routes = [
 export default new VueRouter({
   routes
 })
+
+// 启动命令：　npm run dev

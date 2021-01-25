@@ -1,8 +1,7 @@
 .DS_Store
-ZipFIle
-test.py
-id:*
-howtousegit
+jobprojects
+bot.log
+readme.txt
 
 # local env files
 .env.local

@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import CrashTableFixed from './components/CrashTableFixed' 
+import CrashTableFixed from './components/CrashTableFixed'  
 import CrashTableUnFixed from './components/CrashTableUnFixed' 
 import { getCrashes_fixed, getCrashes_unfixed } from './api'
 export default {
@@ -44,7 +44,7 @@ export default {
       unfixedcrash: [],
       pagesize: 8,
       currentPage1: 1,
-      total1: 0,
+      total1: 0, 
       currentPage2: 1,
       total2: 0,
     };

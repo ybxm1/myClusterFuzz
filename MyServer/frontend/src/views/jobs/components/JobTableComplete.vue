@@ -43,7 +43,7 @@
 </template>
 
 <script>
-// import { formatDate } from "@/utils/tools";
+// import { formatDate } from "@/utils/tools"; 
 import { getJobLog, getCrashInfo } from "../api";
 // import { JobStatus } from "@/views/fuzz/constants";
 

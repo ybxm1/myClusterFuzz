@@ -58,6 +58,7 @@ def get_job_running(page):
             num = num + 1
         data.append(dict)
     # print(data)
+    print(count)
     return jsonify({"data": list(data), "count": count}), 200
 
 
@@ -93,6 +94,7 @@ def get_job_complete(page):
             num = num + 1
         data.append(dict)
     # print(data)
+    print(count)
     return jsonify({"data": list(data), "count": count}), 200
 
 

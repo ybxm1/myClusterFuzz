@@ -82,13 +82,14 @@ backend2:
 2. 如何判断节点死亡（未运行任务时死亡，运行任务到一半时死亡）？（在节点资源管理中需要用到）　当前端查看节点资源管理的时候，会对nodes表进行操作，先删除死亡节点，在进行节点资源显示。在进行信息同步的时候，backend2会更新nodes的last_modify_time，或者取任务的时候也会更新，当超过某个时间阈值（2h）而未更新时，就可以判定该节点已经死亡，将其从nodes表中删除。
 3. 种子去重？
 4. 同一个节点执行多次时，后一次的漏洞信息和种子信息会覆盖前一次。需要改进。
+5. afl和honggfuzz漏洞信息的显示。
 
 
 
 任务规划：
 1. reproduce实现  //success
 2. 双节点测试　//success
-3. afl、honggfuzz
+3. afl、honggfuzz  
 4. 一个节点多次取任务
 
 
@@ -120,7 +121,7 @@ crash-2885f8ae7984cd88da46c6fee0413fee1a9f7b24
 crash-2885f8ae7984cd88da46c6fee0413fee1a9f7b24
 
 
-
+/home/ybxm/AFL/afl-2.52b/afl-g++ -g handshake-fuzzer.cc  openssl-1.0.1f/libssl.a openssl-1.0.1f/libcrypto.a -std=c++17 -Iopenssl-1.0.1f/include/ -lstdc++fs -ldl -lstdc++ -o afl-handshake
 
 
 

@@ -113,7 +113,7 @@ export default {
       // formData = this.$refs.createJobForm; 直接引用form表单会造成TypeError: cyclic object value错误
       uplodaJobInfo(formData)
         .then(resp => {
-          this.$message(resp.data.msg);
+          this.$message(resp.data.msg);  // 弹窗显示“任务创建从成功”
           this.$router.push({ path: "/joblist" });
         })
         .catch(err => { // Todo 错误信息显示

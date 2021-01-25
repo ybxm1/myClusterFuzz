@@ -13,5 +13,5 @@ export const getJobLog = (id) => {
 }
 
 export const getCrashInfo = (id) => {
-  return request.get(`/crashes/getcrashinfo/${id}`)  // 最后必须加/，否则后端会报308错误　
+  return request.get(`/crashes/getcrashinfo/${id}`)  // 最后必须加/，否则后端会报308错误　 
 }

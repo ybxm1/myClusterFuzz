@@ -24,6 +24,7 @@
           <div class="cases-pagination">
               <el-pagination
                 :current-page="currentPage2"
+                :page-size="pagesize"
                 @current-change="handlePageChange2"
                 layout="prev, pager, next"
                 :total="total2"

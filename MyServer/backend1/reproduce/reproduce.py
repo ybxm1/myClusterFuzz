@@ -143,6 +143,8 @@ def get_rep_complete(page):
         elif dict["isfixed"] == 1:
             dict["isfixed"] = "漏洞已修复"
         data.append(dict)
-    # print(data)
+    print(res)
+    print(count)
+    print(data)
     return jsonify({"data": list(data), "count": count}), 200
 

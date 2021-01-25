@@ -80,7 +80,7 @@ export default {
     //     1: "模糊测试",
     //     2: "漏洞扫描"
     //   }[job.type];
-    // },
+    // }, 
     // formatTime(job) {
     //   return formatDate(new Date(job.time * 1000));
     // },

@@ -13,13 +13,14 @@
                 :total="total1"
               ></el-pagination>
           </div>
-        </el-tab-pane>
+        </el-tab-pane> 
         
         <el-tab-pane label="已完成" name="complete">
           <JobTableComplete :data="completedjobs"/>
           <div class="cases-pagination">
               <el-pagination
                 :current-page="currentPage2"
+                :page-size="pagesize"
                 @current-change="handlePageChange2"
                 layout="prev, pager, next"
                 :total="total2"
@@ -50,7 +51,7 @@ export default {
   },
   components: {
     JobTableRuning,
-    JobTableComplete
+    JobTableComplete 
   },
   mounted(){
     this.handlePageChange1(1); 
@@ -72,7 +73,7 @@ export default {
 
 
     // getRuningJobs() {
-    //   getJobs_runing()
+    //   getJobs_runing() 
     //     .then(resp => {
     //       if (resp.code >= 500) {
     //         throw new Error('服务器连接失败')
