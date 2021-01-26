@@ -460,7 +460,10 @@ def submit_seeds(jobname, fuzzer):
             continue
         try:
             data = {"nodename": nodename, "jobname": jobname, "seedhnum": (nodename + "_" + str(seed_number))}
-            res = requests.post(url_post_seed, files={"file": open(seed_path + i, 'rb')}, data=data)
+            try:
+                res = requests.post(url_post_seed, files={"file": open(seed_path + i, 'rb')}, data=data)
+            except Exception as e:
+                print(e)
             print(res.text)
             seed_exist[i] = seed_number
             seed_number = seed_number + 1

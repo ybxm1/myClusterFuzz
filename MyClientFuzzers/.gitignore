@@ -4,6 +4,8 @@ honggfuzz
 afl-2.52b
 log
 __pycache__
+# afl-2.52b
+# honggfuzz
 
 # local env files
 .env.local

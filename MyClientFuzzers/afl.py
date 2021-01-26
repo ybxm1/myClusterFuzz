@@ -31,7 +31,10 @@ class AflEngine(engine.Engine):
     start_cmd = afl_path + " -i " + input + " -o " + output + " -m none " + target
     print(start_cmd)
     t_start = time.time()
-    pro = subprocess.Popen(start_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # pro = subprocess.Popen(start_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    with open(output + "./log/afl_run.log", "w") as out:
+        pro = subprocess.Popen(start_cmd, shell=True, stdout=out, stderr=out)
+
     fp = subprocess.Popen.poll(pro)
     print("进程状态码：")
     print(fp)
