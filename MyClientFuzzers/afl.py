@@ -32,8 +32,9 @@ class AflEngine(engine.Engine):
     print(start_cmd)
     t_start = time.time()
     # pro = subprocess.Popen(start_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    with open(output + "./log/afl_run.log", "w") as out:
-        pro = subprocess.Popen(start_cmd, shell=True, stdout=out, stderr=out)
+    # with open(output + "/log/afl_run.log", "w") as out:
+    #     pro = subprocess.Popen(start_cmd, shell=True, stdout=out, stderr=out)
+    pro = subprocess.Popen(start_cmd, shell=True)
 
     fp = subprocess.Popen.poll(pro)
     print("进程状态码：")
@@ -105,25 +106,7 @@ class AflEngine(engine.Engine):
       time.sleep(8)
 
 
-"""
-    # start_cmd = ["exec ./run.sh"]
-    # print(start_cmd)
-    # t_start = time.time()
-    # pro = subprocess.Popen(start_cmd,  shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # for i in iter(pro.stdout.readline, ''):
-    #   if len(i) < 1:
-    #       break
-    #   print(i.decode('utf-8').strip())
-    #   if time.time() - t_start > max_time:
-    #       break
-    # p = psutil.Process(pro.pid)
-    # p.terminate()
-    # for proc in psutil.process_iter():  # 通过进程名的方式来kill进程
-    #     if proc.name() == "afl-fuzz":
-    #         proc.terminate()
-    #         print("afl-fuzz process end successfully!")
-    #         break
-"""
+
 
 """
 参考链接：

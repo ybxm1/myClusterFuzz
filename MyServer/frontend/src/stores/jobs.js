@@ -14,6 +14,8 @@ const jobs = {
       state.createDialog = status
     }
   },
+
+  
   actions: {
     reloadJobs_runing (context) {
       return getJobs_runing().then(response => {
@@ -42,12 +44,6 @@ const jobs = {
     uncompletedJobs: state => {
         return state.jobs
     },
-    // errorJobs: state => {
-    //   if (!state.jobs) return []
-    //   return state.jobs.filter(job => {
-    //     return job.status === 5
-    //   })
-    // }
   }
 }
 export default jobs

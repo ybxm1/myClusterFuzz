@@ -5,6 +5,7 @@
     <el-table :data="data" :height="tableHeight" style="background-color:#393939;">
       <el-table-column prop="id" label="任务ID" ></el-table-column>
       <el-table-column prop="name" label="任务名" ></el-table-column>
+      <el-table-column prop="type" label="模糊测试类型" ></el-table-column>
       <el-table-column prop="fuzzer" label="模糊器" ></el-table-column>
       <el-table-column prop="botnum" label="节点数" ></el-table-column>
       <el-table-column prop="time" label="运行时间" ></el-table-column>

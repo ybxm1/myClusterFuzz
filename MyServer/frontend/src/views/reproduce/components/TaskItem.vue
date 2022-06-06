@@ -2,7 +2,7 @@
   <div class="task-item">
     <div class="task-label">{{ name }}</div>
     <el-button @click="createTask">
-      <svg-icon icon="plus" class="create-icon"/>创建
+      <svg-icon icon="plus" class="create-icon"/>创建 
     </el-button>
   </div>
 </template>

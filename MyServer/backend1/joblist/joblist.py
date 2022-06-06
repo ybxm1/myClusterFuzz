@@ -9,7 +9,7 @@ import os
 joblist = Blueprint('joblist', __name__)
 
 
-mysql_table_head = ["id", "name", "fuzzer", "botnum", "surplusnum", "completenum",\
+mysql_table_head = ["id", "name", "type", "fuzzer", "botnum", "surplusnum", "completenum",\
                     "time", "exec", "jobpath", "crashnum", "createtime"]
 
 def exec_sql(sql):
@@ -54,7 +54,17 @@ def get_job_running(page):
         dict = {}
         num = 0
         for j in res[i]:
-            dict[mysql_table_head[num]] = j
+            if num == 2:
+                if j == 1:
+                    dict[mysql_table_head[num]] = "普通模糊测试"
+                elif j == 2:
+                    dict[mysql_table_head[num]] = "集成模糊测试"
+                elif j == 3:
+                    dict[mysql_table_head[num]] = "混合模糊测试"
+                else:
+                    dict[mysql_table_head[num]] = "目标点模糊测试"
+            else:
+                dict[mysql_table_head[num]] = j
             num = num + 1
         data.append(dict)
     # print(data)
@@ -90,7 +100,17 @@ def get_job_complete(page):
         dict = {}
         num = 0
         for j in res[i]:
-            dict[mysql_table_head[num]] = j
+            if num == 2:
+                if j == 1:
+                    dict[mysql_table_head[num]] = "普通模糊测试"
+                elif j == 2:
+                    dict[mysql_table_head[num]] = "集成模糊测试"
+                elif j == 3:
+                    dict[mysql_table_head[num]] = "混合模糊测试"
+                else:
+                    dict[mysql_table_head[num]] = "目标点模糊测试"
+            else:
+                dict[mysql_table_head[num]] = j
             num = num + 1
         data.append(dict)
     # print(data)

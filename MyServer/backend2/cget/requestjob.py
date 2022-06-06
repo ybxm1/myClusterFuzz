@@ -74,8 +74,9 @@ def get_job():
     job = exec_sql(get_job_sql)
     if len(job) > 0:
         print(job[0])
-        resp = jsonify({"exist": "yes", "type": "fuzz", "name": job[0][1], "fuzzer": job[0][2],\
-                        "time": job[0][6], "exec": job[0][7],  "surplusnum": job[0][4]})
+        resp = jsonify({"exist": "yes", "type": "fuzz", "name": job[0][1], "fuzzer": job[0][3],\
+                        "time": job[0][7], "exec": job[0][8],  "surplusnum": job[0][5], "fuzztype": job[0][2]})
+
         job_update_sql = "update jobs set surplusnum = surplusnum - 1 where id = " + str(job[0][0])
         res1 = exec_sql(job_update_sql)
         print(res1)
@@ -83,9 +84,11 @@ def get_job():
         nodes_update_jobid_sql = "update nodes set jobid = " + str(job[0][0]) + " where name = '" + name + "'"
         res2 = exec_sql(nodes_update_jobid_sql)
         print(res2)
+
         nodes_update_fetchtime = "update nodes set fetchtime = default where name = '" + name + "'"
         res = exec_sql(nodes_update_fetchtime)
         print(res)
+
         return resp
 
     return jsonify({"exist": "no"})
@@ -116,16 +119,6 @@ def get_crash():
     # print(path)
     return send_from_directory(r"" + path + "", filename=name , as_attachment=True)
 
-    # # data = request.get_json().decode()
-    # archid = request.args.get("archid")
-    # archname = request.args.get("archname")
-    # # print(archid + " " + archname)
-    # sql = "select archpath from archive where id=" + str(archid)
-    # cursor.execute(sql)
-    # results = cursor.fetchall()
-    # archpath = results[0][0]
-    # return send_from_directory(r"" + archpath + "", filename=archname, as_attachment=True)
-
 
 @requestjob.route("/getseeds", methods=["GET","POST"])
 def get_seed():
@@ -151,31 +144,3 @@ def get_seed():
     f.close()
     return send_from_directory(r"" + seeds_path + "", filename="seeds.zip", as_attachment=True)  # 若没有设置好，则会报404问题
 
-
-
-    # sql1 = "select * from node where name = " + "'" + node + "'"
-    # res_node = exec_sql(sql1)
-    # if len(res_node) == 0:
-    #     sql = "insert into node() values(default, " + "'" + node + "'" + " , 0, 1, default, default)"
-    #     res = exec_sql(sql)
-    #     print("add " + node + " to node list.")
-    #
-    # sql2 = "select * from job where tasknum > 0"
-    # results = exec_sql(sql2)
-    # if results:
-    #     for res in results:
-    #         sql3 = "select version, name, execname from archive where id = " + str(res[5])
-    #         ver = exec_sql(sql3)
-    #         resp = jsonify({"exist": "yes", "jobname": res[1], "fuzzername": res[2], "cmd": res[3],\
-    #                         "archversion": ver[0][0], "archid": res[5], "archname": ver[0][1],\
-    #                        "execname": ver[0][2], "type": res[7]})
-    #         sql4 = "update node set jobid = " + str(res[0]) + ", last_modify_time = CURRENT_TIMESTAMP"\
-    #                + " where name = " + "'" + node + "'"
-    #         exec_sql(sql4)
-    #         sql5 = "update job set tasknum = " + str(res[6] - 1) + " where id = " + str(res[0])
-    #         exec_sql(sql5)
-    #         return resp
-    #         # return "jobname={},fuzzername={},cmd={},archversion={}".format(\
-    #         #     res[1], res[2], res[3], ver[0][0])
-    # else:
-    #     return jsonify({"exist": "no"})

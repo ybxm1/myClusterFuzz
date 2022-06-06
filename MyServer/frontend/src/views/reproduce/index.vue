@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import JobTable from './components/JobTable'
+// import JobTable from './components/JobTable'
 import TaskItem from './components/TaskItem'
 import CreateDialog from './components/CreateDialog'
 import ReproduceRuning from './components/ReproduceRuning'
@@ -59,7 +59,7 @@ export default {
   },
   components: {
     TaskItem,
-    JobTable,
+    // JobTable,
     CreateDialog,
 
     ReproduceRuning,

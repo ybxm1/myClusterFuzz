@@ -42,7 +42,7 @@ module.exports = merge(common, {
     new webpack.HotModuleReplacementPlugin(),
     new FriendlyErrorsWebpackPlugin({
       compilationSuccessInfo: {
-        messages: ['Application running in http://localhost:8080/']
+        messages: ['Application running in http://localhost:8080/']  // 前端项目默认的端口号
       },
       clearConsole: true
     })

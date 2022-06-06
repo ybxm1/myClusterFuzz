@@ -28,13 +28,14 @@ def exec_sql(sql):
 def create_job():
     file = request.files.get('file')
     # file.read()
-    job_info = request.form.to_dict()
+    job_info = request.form.to_dict()  # 将表格数据转化为字典数据
+    print("job_info is " + str(job_info))
+    type = job_info.get("type")
     jobname = job_info.get("jobname")
-    fuzz = job_info.get("fuzz")
+    fuzz = job_info.get("fuzz")  # 模糊器名称
     botnum = job_info.get("botnum")
     runtime = job_info.get("runtime")
     execname = job_info.get("exec")
-    print(job_info)
 
     jobpath = pref_path + jobname
     file_save_path = jobpath + "/" + jobname + ".zip"
@@ -44,7 +45,6 @@ def create_job():
             'msg': '任务已存在！'
         }), 403
 
-    # create three catalog
     try:
         crash_path = jobpath + "/crashs/"
         info_path = jobpath + "/info/"
@@ -60,11 +60,10 @@ def create_job():
             'msg': '任务目录创建失败'
         }), 500
 
-    insert_job_sql = "insert into jobs values(default, '" + jobname + "', '" + fuzz + "'," + botnum + "," + \
+    insert_job_sql = "insert into jobs values(default, '" + jobname + "', '" + type + "', '" + fuzz + "'," + botnum + "," + \
                      botnum + ", 0," + runtime + ", '" + execname + "', '" + jobpath + "', 0, default)"
-    print(insert_job_sql)
-    # insert into jobs() values( default, "test1", "libfuzzer", 1, 0, 1, 60, "handshake-fuzzer",
-    # "/home/ybxm/myClusterFuzz/MyServer/jobprojects/test", 1, default);
+    # print(insert_job_sql)
+
     try:
         file.save(file_save_path)
         exec_sql(insert_job_sql)

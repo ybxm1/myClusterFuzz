@@ -4,8 +4,10 @@
       <el-table-column prop="id" label="节点ID" ></el-table-column>
       <el-table-column prop="name" label="节点名" ></el-table-column>
       <el-table-column prop="ip" label="ip地址" ></el-table-column>
+      <!--
       <el-table-column prop="men" label="内存大小" ></el-table-column>
       <el-table-column prop="corenum" label="核数" ></el-table-column>
+      -->
       <el-table-column prop="isfree" label="是否空闲" ></el-table-column>
       <el-table-column prop="surplustime" label="剩余完成时间" ></el-table-column>
       <!-- 

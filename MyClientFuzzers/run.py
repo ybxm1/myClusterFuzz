@@ -6,6 +6,7 @@ import os, stat
 import time
 import zipfile
 import afl
+import aflfast
 import libfuzzer
 import honggfuzz
 import threading
@@ -28,6 +29,7 @@ time_sync = 30
 
 pref_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/jobprojects/"  # 不同的子节点需要改动的地方
 afl_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/afl-2.52b/afl-fuzz"
+aflfast_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/aflfast/afl-fuzz"
 hogngfuzz_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/honggfuzz/honggfuzz"
 save_path = "/"  # 当前任务的path
 url_get_job = "http://localhost:5001/cget/getjob?"
@@ -109,7 +111,14 @@ def extract(save_path, name, execname):
         extracting = zipfile.ZipFile(name)
         extracting.extractall()
         print(name + "解压完毕！")
-        os.chmod("./" + execname, stat.S_IRWXU)  # 拥有者有全部权限(权限掩码)0o700
+        if '+' in execname:
+            execlist = execname.split("+")
+            os.chmod("./" + execlist[0], stat.S_IRWXU)
+            os.chmod("./" + execlist[1], stat.S_IRWXU)
+            os.chmod("./" + execlist[2], stat.S_IRWXU)
+            os.chmod("./" + execlist[3], stat.S_IRWXU)
+        else:
+            os.chmod("./" + execname, stat.S_IRWXU)  # 拥有者有全部权限(权限掩码)0o700
         return True
     except Exception as e:
         print(e)
@@ -144,6 +153,15 @@ def fuzz(fuzzer, execname, runtime, surplusum, jobname):
         aflfuzzer.fuzz(input, output, info, target, afl_path, runtime, surplusum, nodename, execname)
         logger.info(jobname + " run out successfully")
         print("Afl run out successfully!")
+    elif fuzzer == "AFLFAST":
+        f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
+        f2.write("123")
+        f2.close()
+
+        aflfastfuzzer = aflfast.AFLFASTEngine()
+        aflfastfuzzer.fuzz(input, output, info, target, aflfast_path, runtime, surplusum, nodename, execname)
+        logger.info(jobname + " run out successfully")
+        print("AFLFAST run out successfully!")
     elif fuzzer == "Libfuzz":
         libfuzz = libfuzzer.LibfuzzerEngine()
         libfuzz.fuzz(input, output, info, target, runtime, surplusum, nodename, execname)  # nodename全局变量
@@ -195,15 +213,6 @@ def task_type(type, jobname, fuzzername, execname, runtime, surplusum, crashname
         print("Don't know the job type.")
 
 
-# def submit_crashes(jobname, fuzzer, execname):
-#     if fuzzer == "AFL":
-#         submit_crashes_afl(jobname, execname)
-#     elif fuzzer == "Libfuzz":
-#         submit_crashes_libfuzz(jobname)
-#     elif fuzzer == "Honggfuzz":
-#         submit_crashes_honggfuzz(jobname)
-#     else:
-#         print("Can't know the fuzzer type.")
 
 def submit_crashes(jobname, fuzzer, execname):
     global crash_number  # 防止本地的crash命名冲突，每一轮任务完成后需要重置
@@ -212,6 +221,16 @@ def submit_crashes(jobname, fuzzer, execname):
         target = save_path + execname
         aflfuzzer = afl.AflEngine()
         aflfuzzer.get_crash_info(crash_path, target, save_path)  # afl只产生漏洞测试用例，其对应的漏洞信息不会产生，所以这里需要生成漏洞对应的漏洞信息，便于定位
+        crashlist = os.listdir(crash_path)
+        print(crashlist)
+        logger.info("submit crash")
+        print(crashlist)
+
+    elif fuzzer == "AFLFAST":
+        crash_path = save_path + "crashs/crashes/"
+        target = save_path + execname
+        aflfastfuzzer = aflfast.AFLFASTEngine()
+        aflfastfuzzer.get_crash_info(crash_path, target, save_path)  # afl只产生漏洞测试用例，其对应的漏洞信息不会产生，所以这里需要生成漏洞对应的漏洞信息，便于定位
         crashlist = os.listdir(crash_path)
         print(crashlist)
         logger.info("submit crash")
@@ -230,7 +249,7 @@ def submit_crashes(jobname, fuzzer, execname):
         return
 
     else:
-        print("Can't know the fuzzer type.")
+        print("Can't know the fuzzer type. (submit_crashes)")
         return
 
     for i in crashlist:  # 发送漏洞信息文件
@@ -303,113 +322,8 @@ def submit_crashes_honggfuzz(crash_path, jobname):
                         break
                 break
 
-
-        # # for循环多余，有漏洞用例，必然会存在其对应的漏洞信息文件，所以直接发送即可
-        # crashlist1 = os.listdir(crash_path)  # success
-        # for o in crashlist1:  # 发送漏洞对应的漏洞信息文件
-        #     # print(i)
-        #     # print("info" + i)
-        #     # print(j)
-        #     if i in o and i is not o:  # crashinfo的命名不能乱命名，info+漏洞信息名
-        #         # # １．发送漏洞文件
-        #         # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-        #         # data = {"nodename": nodename, "jobname": jobname, "crashnum": \
-        #         #     (jobname + "_" + nodename + "_" + "crash_" + str(crash_number))}
-        #         # res = requests.post(url_post_crash, files={"file": open(crash_path + i, 'rb')}, data=data)
-        #         # print("crash")
-        #         # print(res.text)
-        #
-        #         # 2. 在发送漏洞信息文件
-        #         datainfo = {"nodename": nodename, "jobname": jobname, "crashnum": \
-        #             (jobname + "_" + nodename + "_info_" + str(crash_number))}
-        #         res1 = requests.post(url_post_crash, files={"file": open(crash_path + o, 'rb')}, data=datainfo)
-        #         print("info")
-        #         print(res1.text)
-        #         break
-
         crash_exist[i] = crash_number
         crash_number = crash_number + 1
-
-
-
-
-# def submit_crashes_afl(jobname, execname):
-#     crash_path = save_path + "crashs/crashes"
-#     target = save_path + execname
-#     aflfuzzer = afl.AflEngine()
-#     aflfuzzer.get_crash_info(crash_path, target, save_path)  # afl只产生漏洞测试用例，其对应的漏洞信息不会产生，所以这里需要生成漏洞对应的漏洞信息，便于定位
-#
-#     global crash_number  # 防止本地的crash命名冲突，每一轮任务完成后需要重置
-#     crashlist = os.listdir(crash_path)
-#     # print(crashlist)
-#     logger.info("submit crash")
-#     print(crashlist)
-#
-#     for i in crashlist:  # 发送漏洞信息文件
-#         if i in crash_exist:
-#             continue
-#         if "info" in i or "README" in i:
-#             continue
-#         data = {"nodename": nodename, "jobname": jobname, "crashnum":\
-#                 (jobname + "_" + nodename + "_" + "crash_" + str(crash_number))}
-#         res = requests.post(url_post_crash, files={"file": open(crash_path + "/" + i, 'rb')}, data=data)
-#         print("crash")
-#         print(res.text)
-#         # print(i)
-#         # print(crash_number)
-#
-#         for j in crashlist:  # 发送漏洞对应的漏洞信息文件
-#             if ("info" + i) == j:  # crashinfo的命名不能乱命名，info+漏洞信息名
-#                 datainfo = {"nodename": nodename, "jobname": jobname, "crashnum": \
-#                             (jobname + "_" + nodename + "_" + "info_" + str(crash_number))}
-#                 res1 = requests.post(url_post_crash, files={"file": open(crash_path + "/" + j, 'rb')}, data=datainfo)
-#                 print("info")
-#                 print(res1.text)
-#                 break
-#
-#         crash_exist[i] = crash_number
-#         crash_number = crash_number + 1
-
-# def submit_crashes_libfuzz(jobname):
-#     global crash_number  # 防止本地的crash命名冲突，每一轮任务完成后需要重置
-#     crash_path = save_path + "crashs/"
-#     crashlist = os.listdir(crash_path)
-#     # print(crashlist)
-#     logger.info("submit crash")
-#     print(crashlist)
-#
-#     for i in crashlist:  # 发送漏洞信息文件
-#         if i in crash_exist:
-#             continue
-#         if "info" in i:
-#             continue
-#         data = {"nodename": nodename, "jobname": jobname, "crashnum":\
-#                 (jobname + "_" + nodename + "_" + "crash_" + str(crash_number))}
-#         res = requests.post(url_post_crash, files={"file": open(crash_path + i, 'rb')}, data=data)
-#         print("crash")
-#         print(res.text)
-#         # print(i)
-#         # print(crash_number)
-#
-#         for j in crashlist:  # 发送漏洞对应的漏洞信息文件
-#             if ("info" + i) == j:
-#                 datainfo = {"nodename": nodename, "jobname": jobname, "crashnum": \
-#                             (jobname + "_" + nodename + "_" + "info_" + str(crash_number))}
-#                 res1 = requests.post(url_post_crash, files={"file": open(crash_path + j, 'rb')}, data=datainfo)
-#                 print("info")
-#                 print(res1.text)
-#                 break
-#
-#         crash_exist[i] = crash_number
-#         crash_number = crash_number + 1
-
-    # """
-    # dict.has_key(key)
-    # 如果键在字典dict里返回true，否则返回false
-    # """
-
-
-
 
 
 
@@ -427,30 +341,20 @@ def submit_info(jobname, surplusnum):
 
 
 
-# def submit_seeds(jobname, fuzzer):
-#     if fuzzer == "AFL":
-#         seed_path = save_path + "crashs/queue"
-#     elif fuzzer == "Libfuzz":
-#         seed_path = save_path + "seeds/"
-#     elif fuzzer == "Honggfuzz":
-#         seed_path = save_path + "seeds/"
-#     else:
-#         print("Can't know the fuzzer type.")
-
-
-
 def submit_seeds(jobname, fuzzer):
     # seed_file_path = save_path + "/" + "seeds"
     global seed_number
 
     if fuzzer == "AFL":
         seed_path = save_path + "crashs/queue/"
+    elif fuzzer == "AFLFAST":
+        seed_path = save_path + "crashs/queue/"
     elif fuzzer == "Libfuzz":
         seed_path = save_path + "seeds/"
     elif fuzzer == "Honggfuzz":
         seed_path = save_path + "seeds/"
     else:
-        print("Can't know the fuzzer type.")
+        print("Can't know the fuzzer type. (submit_seeds)" + fuzzer)
         return
 
     seedlist = os.listdir(seed_path)
@@ -479,12 +383,14 @@ def get_seeds(jobname, fuzzer):  # 第二步。种子同步阶段分两步走，
 
     if fuzzer == "AFL":
         seed_path = save_path + "crashs/queue/"
+    elif fuzzer == "AFLFAST":
+        seed_path = save_path + "crashs/queue/"
     elif fuzzer == "Libfuzz":
         seed_path = save_path + "seeds/"
     elif fuzzer == "Honggfuzz":
         seed_path = save_path + "seeds/"
     else:
-        print("Can't know the fuzzer type.")
+        print("Can't know the fuzzer type. (get_seeds)")
         return
 
     # 从主节点获取种子压缩包
@@ -537,15 +443,9 @@ def reproduce_complete(jobname, isfix, crashname):
 
 
 if __name__ == '__main__':
-    # 同步函数测试
-    # save_path = "/home/ybxm/MyClientFuzzers/jobprojects/libfuzzer/test/1/"
-    # submit_info("test", 1)
-    # submit_crashes("test", 1)
-    # submit_seeds("test", 1)
-
     while(True):   # 子节点的管理脚本将一直运行
         # 获取任务
-        job = get_job()
+        job = get_job()  # job为字典类型
         if job["exist"] == "no":
             print("No job to run, sleep 10s!")
             time.sleep(10)
@@ -568,21 +468,27 @@ if __name__ == '__main__':
         runtime = 1
         surplusum = 1
         crashname = ''
+        jobfuzzer = ""
+        nowexec = ""
         if job["type"] == "fuzz":
-            runtime = job["time"]  # if中的变量可以在if外使用
+            runtime = job["time"]  # if中的变量不可以在if外使用，除非在if之前已经对其进行声明了
             surplusum = job["surplusnum"]
+            if job["fuzztype"] == 1:  # 前端传递给backend1的数据其类型均是str，而backend2传递给节点的数据则是按照数据库中各字段的类型
+                jobfuzzer = job["fuzzer"]
+                nowexec = job["exec"]
+            elif job["fuzztype"] == 2:
+                frs = job["fuzzer"].split("+")
+                jobfuzzer = frs[surplusum-1]
+                ers = job["exec"].split("+")
+                nowexec = ers[surplusum-1]
+
         else:
             crashname = job["crashname"]
 
-        # test libfuzz directly
-        # x global save_path
-        # save_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/jobprojects/Libfuzz/12-21-test/"
-        # task_type("fuzz", "12-21-test", 'Libfuzz', 'handshake-fuzzer', 60, 1)
-
         print("thread start")
         logger.info("fuzz process start!")
-        p1 = multiprocessing.Process(target=task_type, args=(job["type"], job["name"], job["fuzzer"],\
-                                 job["exec"], runtime, surplusum, crashname))
+        p1 = multiprocessing.Process(target=task_type, args=(job["type"], job["name"], jobfuzzer,\
+                                 nowexec, runtime, surplusum, crashname))
         p1.start()
         # time.sleep(80)
 
@@ -596,10 +502,10 @@ if __name__ == '__main__':
             start_time = time.time()
             while time.time() - start_time < runtime + 3:
                 time.sleep(time_sync)  # 每隔30秒同步一次，可以按需要设置
-                submit_crashes(job["name"], job["fuzzer"], job["exec"])  # job["name"]
+                submit_crashes(job["name"], jobfuzzer, nowexec)  # job["name"]
                 submit_info(job["name"], job["surplusnum"])  # job["surplusnum"]
-                submit_seeds(job["name"], job["fuzzer"])
-                get_seeds(job["name"], job["fuzzer"])
+                submit_seeds(job["name"], jobfuzzer)
+                get_seeds(job["name"], jobfuzzer)
 
             job_complete(job["name"])  # 时间一到，就会发送任务完成请求
         else:  # reproduce
@@ -632,76 +538,6 @@ if __name__ == '__main__':
 
 
 
-
-
-        # start_time = time.time()
-        # while(True):
-        #     if time.time() - start_time > float(value) + 3.0:  # 任务执行时间到了，所以需要结束，去获取新的任务
-        #         break
-        #     time.sleep(20)
-        #     submit_crashes(job["jobname"], job["archversion"])
-        #     submit_info(job["jobname"], job["archversion"])
-        #     submit_seeds(job["jobname"], job["archversion"])
-        #     # get_seed()
-
-        # resp = jsonify({"exist": "yes", "type": "reproduce", "name": rep[0][1], "fuzzer": rep[0][2],\
-        #                 "crashname": rep[0][3], "exec": rep[0][4]})
-        # resp = jsonify({"exist": "yes", "type": "fuzz",      "name": job[0][1], "fuzzer": job[0][2], \
-        #                 "time": job[0][6], "exec": job[0][7], "surplusnum": job[0][4]})
-
-        # try:  # 从主节点下载固件，并将其解压以及创建相关文件目录
-        #     res = get_archive(job["archid"], job["fuzzername"], job["jobname"], job["archversion"],\
-        #                       job["archname"], job["execname"])
-        # except Exception as e:
-        #     print("任务创建失败！")
-        #     print(e)
-        #     break
-        # arg = job["cmd"].split(",")  # Todo 如果传入多个参数该如何解决？
-        # key, value = arg[0].split(":")
-
-        # t1 = threading.Thread(target=task_type, args=(job["type"], job["name"], job["fuzzer"],\
-        #                       job["exec"], runtime, surplusum))
-        # t.start() 　# 使用进程或者线程均可
-
-        # break
-
-
-
-
-# result = api_result.decode().split("'") # transform bytes to str then split
-# res = result[0].split(",")
-#
-#
-# # 得到job的参数信息
-# jobname = (res[0].split("="))[1]
-# fuzzername = (res[1].split("="))[1]
-# cmd = (res[2].split("="))[1]
-# archversion = (res[3].split("="))[1]
-# print(jobname + " " + fuzzername + " " + cmd + " " + archversion)
-
-# data = {
-#     "version": archversion,
-#     "archname": "openssl-fuzzer-build.zip"
-# }
-# datajson = json.dumps(data).encode()
-# filename = save_path + data["archname"]
-# urllib.request.urlretrieve(url, filename=None, reporthook=None, data=None)
-# req.urlretrieve(url2, filename=filename, data=datajson)
-
-"""
-if __name__ == '__main__':
-    print("downloading with urllib")
-    # url = 'http://www.wzsky.net/img2013/uploadimg/20130906/1216294.jpg'
-    url = 'http://music.163.com/song/media/outer/url?id=436514312.mp3'
-    f = urllib.request.urlopen(url)
-    data = f.read()
-    # 存储位置可自定义
-    with open("C:/Users/asus/Desktop/tes.mp3", 'wb') as code:
-        code.write(data)
-
-pref_path = "/home/ybxm/myClusterfuzzClinet/client1/jobprojects/"
-
-"""
 """
 线程是可以创建进程的，但是线程和他创建的进程之间没有继承关系，线程的资源是共享其所依附的进程的资源，
 （线程只独立拥有很少一些自己运行所需要的资源），所以线程所创建的进程的父进程是线程所依附的进程，也可

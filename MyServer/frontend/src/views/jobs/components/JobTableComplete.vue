@@ -2,9 +2,10 @@
 <div class="vuls-table-container">
   <div class="job-table">
     <!-- 以表格的形式显示，任务ID、任务名、模糊器、节点数、运行时间（每个节点的fuzz）、任务创建时间、已发现漏洞数、任务完成度、运行日志信息链接 -->
-    <el-table :data="data" :height="tableHeight" style="background-color:#393939;">
+    <el-table :data="data" :height="tableHeight" style="background-color:#393939;">  <!-- data中的数据自行提取 -->
       <el-table-column prop="id" label="任务ID" ></el-table-column>
-      <el-table-column prop="name" label="任务名" ></el-table-column>
+      <el-table-column prop="name" label="任务名" ></el-table-column> 
+      <el-table-column prop="type" label="模糊测试类型"></el-table-column> <!--  :formatter='showFuzzType' -->
       <el-table-column prop="fuzzer" label="模糊器" ></el-table-column>
       <el-table-column prop="botnum" label="节点数" ></el-table-column>
       <el-table-column prop="time" label="运行时间" ></el-table-column>
@@ -12,7 +13,7 @@
       <el-table-column prop="crashnum" label="已发现漏洞数" >
           <template slot-scope="scope">
              <font>{{scope.row.crashnum}}个漏洞</font>
-        　   <el-button @click="showcrash(scope.row)" style="margin-left:35px;">查看</el-button>
+        　   <el-button @click="showcrash(scope.row)" style="margin-left:15px;">查看</el-button>
           </template>
       </el-table-column>
       <el-table-column label="运行日志" >
@@ -93,7 +94,11 @@ export default {
         this.crashdata = resp.data;
       });
     },
-    
+    /*
+    showFuzzType(row, column) {
+      if (row.type == '1') return '普通模糊测试';
+      else return '混合模糊测试';
+    }*/
   }
 };
 </script>

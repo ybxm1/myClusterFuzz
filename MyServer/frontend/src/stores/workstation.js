@@ -3,16 +3,34 @@ const workstation = {
   state: {
     jobs: null, // 任务列表中的任务
     cases: {}, // 展示的用例
-    createDialog: false // 新建任务窗口
+    createDialog: false, // 新建任务窗口
+    createOrdinaryfuzz: false,
+    createIntegerfuzz: false,
+    createMixfuzz: false,
+    createTargetfuzz: false
   },
+  
   mutations: {
     ADD_JOBS (state, newJobs) {
       state.jobs = newJobs
     },
     CHANGE_CREA_DIALOG (state, status) {
       state.createDialog = status
+    },
+    CHANGE_CREA_DIALOG_INTEGER (state, status) {
+      state.createIntegerfuzz = status
+    },
+    CHANGE_CREA_DIALOG_MIX (state, status) {
+      state.createMixfuzz = status
+    },
+    CHANGE_CREA_DIALOG_TARGET (state, status) {
+      state.createTargetfuzz = status
+    },
+    CHANGE_CREA_DIALOG_ORDINARY (state, status) {
+      state.createOrdinaryfuzz = status
     }
   },
+
   actions: {
     reloadJobs (context) {
       return getJobs().then(response => {
@@ -24,6 +42,7 @@ const workstation = {
       })
     }
   },
+
   getters: {
     completedJobs: state => {
       if (!state.jobs) return []

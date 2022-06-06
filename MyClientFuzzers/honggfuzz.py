@@ -49,14 +49,6 @@ class HonggfuzzEngine(engine.Engine):
         print("honggfuzz process end successfully!")
     logger.info("任务完成！")
 
-    # pro = subprocess.Popen(start_cmd,  shell=True, stdout=subprocess.PIPE)
-    # for i in iter(pro.stdout.readline, ''):
-    #   if len(i) < 1:
-    #       break
-    #   print(i.decode('utf-8').strip())
-    # p = psutil.Process(pro.pid)
-    # p.terminate()
-    # honggfuzz通过在start_cmd中设定运行时间后会自动结束，无需人为结束创建的子进程
 
 
   def reproduce(self, target_path, crash_path):
@@ -64,16 +56,5 @@ class HonggfuzzEngine(engine.Engine):
       with open("./reproduce_result.txt", "ab") as out:  # 追加，文件不存在就创建
         pro = subprocess.Popen(cmd, stderr=out)  # 异常对象无法在异常块作用域外访问
       time.sleep(8)
-    # os.chmod(target_path, 0o775)
-    # runner = new_process.UnicodeProcessRunner(target_path)
-    # with open(input_path) as f:
-    #   result = runner.run_and_wait(timeout=max_time, stdin=f)
-    #
-    # return engine.ReproduceResult(result.command, result.return_code,
-    #                               result.time_executed, result.output)
 
 
-
-"""
-
-"""

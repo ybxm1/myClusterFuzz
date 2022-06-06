@@ -8,7 +8,7 @@ import jobs from './jobs'
 Vue.use(Vuex)
 
 const store = new Vuex.Store({
-  modules: {
+  modules: { 
     workstation,
     fuzz,
     user,

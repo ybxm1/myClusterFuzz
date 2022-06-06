@@ -25,6 +25,7 @@
               <div style="display:inline-block;width:70%;">
               <el-select name="fuzz" v-model="form.fuzz" placeholder="请选择模糊器">
                 <el-option label="AFL" value="AFL"></el-option>
+                <el-option label="AFLFAST" value="AFLFAST"></el-option>
                 <el-option label="Honggfuzz" value="Honggfuzz"></el-option>
                 <el-option label="Libfuzz" value="Libfuzz"></el-option>
               </el-select>
