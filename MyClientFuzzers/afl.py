@@ -19,16 +19,20 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-logger.info("Start afl log")
+logger.info("Start afl-derive log")
 
 class AflEngine(engine.Engine):
   @property
   def name(self):
-    return 'afl'
+    return 'afl-derive'
 
-  def fuzz(self, input, output, info, target, afl_path, runtime, surplusum, nodename, execname):
+  def fuzz(self, input, output, info, target, afl_path, runtime, surplusum, nodename, execname, fuzzername):
     info_path = info + nodename + "_" + str(surplusum) + ".log"  # 日志名是啥问题不大，但是要避免同一个节点多次运行日志的时候出现日志覆盖的问题
-    start_cmd = afl_path + " -i " + input + " -o " + output + " -m none " + target
+    start_cmd = ""
+    if fuzzername == "Radamsa":
+        start_cmd = start_cmd + afl_path + "-S slave -R -i " + input + " -o " + output + " -m none -- " + target + " @@"
+    else:
+        start_cmd = start_cmd + afl_path + "-S slave -i " + input + " -o " + output + " -m none -- " + target + " @@"
     print(start_cmd)
     t_start = time.time()
     # pro = subprocess.Popen(start_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -61,7 +65,7 @@ class AflEngine(engine.Engine):
     for proc in psutil.process_iter():  # 通过进程名的方式来kill进程
       if proc.name() == execname:  # 不同的模糊测试实例该名字不一样
         proc.terminate()
-        print("afl process end successfully!")
+        print(fuzzername + " process end successfully!")
     logger.info("任务完成！")
 
 
@@ -94,9 +98,6 @@ class AflEngine(engine.Engine):
           except Exception as e:
               logger.info("get_crash_info error!")
               logger.info(e)
-
-
-
 
   def reproduce(self, target_path, crash_path, job_path):
       os.chdir(job_path)  # 必须切换到可执行文件所在的目录下

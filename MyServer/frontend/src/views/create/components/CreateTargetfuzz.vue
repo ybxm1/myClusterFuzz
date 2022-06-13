@@ -108,7 +108,7 @@ export default {
       let formData = new FormData();
       formData.append("file", this.form.file);
       formData.append("jobname", this.form.jobname);
-      formData.append("fuzz", "ALFGO");
+      formData.append("fuzz", "AFLGO");
       formData.append("botnum", this.form.botnum);
       formData.append("runtime", this.form.runtime);
       formData.append("exec", this.form.exec);

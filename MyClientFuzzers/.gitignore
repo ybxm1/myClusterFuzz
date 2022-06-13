@@ -1,7 +1,16 @@
 .DS_Store
+
+# catalog
 jobprojects
 honggfuzz
 afl-2.52b
+aflfast
+AFLplusplus
+fairfuzz
+qsym.tar
+zelse
+
+
 log
 __pycache__
 # afl-2.52b

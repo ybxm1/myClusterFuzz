@@ -25,7 +25,7 @@
                 <font>模糊器</font>
               </div>
               <div style="display:inline-block;width:70%;margin-left:18px;">
-                <font><strong>AFL + AFLFAST + Libfuzz + Honggfuzz</strong></font>
+                <font><strong>AFL + AFLFAST + Libfuzz + Radamsa</strong></font>
               </div>
             </el-form-item>
             <el-form-item>
@@ -105,7 +105,7 @@ export default {
       let formData = new FormData();
       formData.append("file", this.form.file);
       formData.append("jobname", this.form.jobname);
-      formData.append("fuzz", "AFL+AFLFAST+Libfuzz+Honggfuzz");
+      formData.append("fuzz", "AFL+AFLFAST+Libfuzz+Radamsa");
       formData.append("botnum", 4);
       formData.append("runtime", this.form.runtime);
       formData.append("exec", this.form.exec);

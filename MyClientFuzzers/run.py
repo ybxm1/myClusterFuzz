@@ -5,10 +5,6 @@ import json
 import os, stat
 import time
 import zipfile
-import afl
-import aflfast
-import libfuzzer
-import honggfuzz
 import threading
 import requests
 import socket
@@ -16,6 +12,15 @@ import psutil
 import logging
 import multiprocessing
 import shutil
+
+import afl
+# import aflfast
+# import fairfuzz
+# import radamsa
+import libfuzzer
+import honggfuzz
+import qsym
+# import aflgo
 
 hostname = socket.gethostname()
 nodename = hostname + "-A1"
@@ -30,7 +35,11 @@ time_sync = 30
 pref_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/jobprojects/"  # 不同的子节点需要改动的地方
 afl_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/afl-2.52b/afl-fuzz"
 aflfast_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/aflfast/afl-fuzz"
+fairfuzz_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/fairfuzz/afl-fuzz"
+radamsa_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/AFLplusplus/afl-fuzz"
 hogngfuzz_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/honggfuzz/honggfuzz"
+qsym_path = "/home/ybxm/myClusterFuzz/MyClientFuzzers/qsym"
+
 save_path = "/"  # 当前任务的path
 url_get_job = "http://localhost:5001/cget/getjob?"
 url_get_arch = "http://localhost:5001/cget/getarch?"
@@ -126,6 +135,8 @@ def extract(save_path, name, execname):
         return False
 
 
+
+
 def get_crash(crashname):  # 漏洞复现的时候使用
     data = [("name", crashname)]  # 依据crashname去数据库中获取该文件所在的路径，然后返回
     url = url_get_rep_crash + urllib.parse.urlencode(data)
@@ -144,24 +155,45 @@ def fuzz(fuzzer, execname, runtime, surplusum, jobname):
     info = save_path + "info/"
     target = save_path + execname  # 待测软件所在的路径
     logger.info(input)
-    if fuzzer == "AFL":
-        f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
+    if fuzzer == "AFL" or fuzzer == "AFLFAST" or fuzzer == "FairFuzz" or fuzzer == "Radamsa":
+        f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件，需要改进，有些处理特殊格式的软件在遇到不对的输入文件时，会报错
         f2.write("123")
         f2.close()
-
         aflfuzzer = afl.AflEngine()
-        aflfuzzer.fuzz(input, output, info, target, afl_path, runtime, surplusum, nodename, execname)
+        if fuzzer == "AFL":
+            aflfuzzer.fuzz(input, output, info, target, afl_path, runtime, surplusum, nodename, execname, "AFL")
+        elif fuzzer == "AFLFAST":
+            aflfuzzer.fuzz(input, output, info, target, aflfast_path, runtime, surplusum, nodename, execname, "AFLFAST")
+        elif fuzzer == "FairFuzz":
+            aflfuzzer.fuzz(input, output, info, target, fairfuzz_path, runtime, surplusum, nodename, execname, "FairFuzz")
+        elif fuzzer == "Radamsa":
+            aflfuzzer.fuzz(input, output, info, target, radamsa_path, runtime, surplusum, nodename, execname, "Radamsa")
         logger.info(jobname + " run out successfully")
-        print("Afl run out successfully!")
-    elif fuzzer == "AFLFAST":
-        f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
-        f2.write("123")
-        f2.close()
-
-        aflfastfuzzer = aflfast.AFLFASTEngine()
-        aflfastfuzzer.fuzz(input, output, info, target, aflfast_path, runtime, surplusum, nodename, execname)
-        logger.info(jobname + " run out successfully")
-        print("AFLFAST run out successfully!")
+        print("Afl+ run out successfully!")
+    # elif fuzzer == "AFLFAST":
+    #     f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
+    #     f2.write("123")
+    #     f2.close()
+    #     aflfastfuzzer = aflfast.AFLFASTEngine()
+    #     aflfastfuzzer.fuzz(input, output, info, target, aflfast_path, runtime, surplusum, nodename, execname)
+    #     logger.info(jobname + " run out successfully")
+    #     print("AFLFAST run out successfully!")
+    # elif fuzzer == "FairFuzz":
+    #     f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
+    #     f2.write("123")
+    #     f2.close()
+    #     fairfuzzfuzzer = fairfuzz.FairFuzzEngine()
+    #     fairfuzzfuzzer.fuzz(input, output, info, target, fairfuzz_path, runtime, surplusum, nodename, execname)
+    #     logger.info(jobname + " run out successfully")
+    #     print("FairFuzz run out successfully!")
+    # elif fuzzer == "Radamsa":
+    #     f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
+    #     f2.write("123")
+    #     f2.close()
+    #     radamsafuzzer = radamsa.RadamsaEngine()
+    #     radamsafuzzer.fuzz(input, output, info, target, fairfuzz_path, runtime, surplusum, nodename, execname)
+    #     logger.info(jobname + " run out successfully")
+    #     print("Radamsa run out successfully!")
     elif fuzzer == "Libfuzz":
         libfuzz = libfuzzer.LibfuzzerEngine()
         libfuzz.fuzz(input, output, info, target, runtime, surplusum, nodename, execname)  # nodename全局变量
@@ -172,7 +204,6 @@ def fuzz(fuzzer, execname, runtime, surplusum, jobname):
         f2 = open(input + "/123", "w+")  # 往seeds目录中写入初始的种子文件
         f2.write("123")
         f2.close()
-
         hongg = honggfuzz.HonggfuzzEngine()
         hongg.fuzz(input, output, info, target, hogngfuzz_path, runtime, surplusum, nodename, execname)
         logger.info(jobname + " run out successfully")
@@ -182,17 +213,15 @@ def fuzz(fuzzer, execname, runtime, surplusum, jobname):
 def reproduce(fuzzer, execname, jobname, crashname):
     target = save_path + execname
     crash_path = save_path + crashname
-    if fuzzer == "AFL":
+    if fuzzer == "AFL" or fuzzer == "AFLFAST" or fuzzer == "FairFuzz" or fuzzer == "Radamsa":
         aflfuzzer = afl.AflEngine()
         aflfuzzer.reproduce(target, crash_path, save_path)  # nodename全局变量
-        print("Afl run out successfully!")
-
+        print("Afl+ run out successfully!")
     elif fuzzer == "Libfuzz":
         libfuzz = libfuzzer.LibfuzzerEngine()
         libfuzz.reproduce(target, crash_path)  # nodename全局变量
         logger.info(jobname + " run out successfully")
         print("Libfuzz run out successfully!")
-
     elif fuzzer == "Honggfuzz":
         hongg = honggfuzz.HonggfuzzEngine()
         hongg.reproduce(target, crash_path)
@@ -216,7 +245,7 @@ def task_type(type, jobname, fuzzername, execname, runtime, surplusum, crashname
 
 def submit_crashes(jobname, fuzzer, execname):
     global crash_number  # 防止本地的crash命名冲突，每一轮任务完成后需要重置
-    if fuzzer == "AFL":
+    if fuzzer == "AFL" or fuzzer == "AFLFAST" or fuzzer == "FairFuzz" or fuzzer == "Radamsa":
         crash_path = save_path + "crashs/crashes/"
         target = save_path + execname
         aflfuzzer = afl.AflEngine()
@@ -226,15 +255,15 @@ def submit_crashes(jobname, fuzzer, execname):
         logger.info("submit crash")
         print(crashlist)
 
-    elif fuzzer == "AFLFAST":
-        crash_path = save_path + "crashs/crashes/"
-        target = save_path + execname
-        aflfastfuzzer = aflfast.AFLFASTEngine()
-        aflfastfuzzer.get_crash_info(crash_path, target, save_path)  # afl只产生漏洞测试用例，其对应的漏洞信息不会产生，所以这里需要生成漏洞对应的漏洞信息，便于定位
-        crashlist = os.listdir(crash_path)
-        print(crashlist)
-        logger.info("submit crash")
-        print(crashlist)
+    # elif fuzzer == "AFLFAST":
+    #     crash_path = save_path + "crashs/crashes/"
+    #     target = save_path + execname
+    #     aflfastfuzzer = aflfast.AFLFASTEngine()
+    #     aflfastfuzzer.get_crash_info(crash_path, target, save_path)  # afl只产生漏洞测试用例，其对应的漏洞信息不会产生，所以这里需要生成漏洞对应的漏洞信息，便于定位
+    #     crashlist = os.listdir(crash_path)
+    #     print(crashlist)
+    #     logger.info("submit crash")
+    #     print(crashlist)
 
     elif fuzzer == "Libfuzz":
         crash_path = save_path + "crashs/"
@@ -345,10 +374,10 @@ def submit_seeds(jobname, fuzzer):
     # seed_file_path = save_path + "/" + "seeds"
     global seed_number
 
-    if fuzzer == "AFL":
+    if fuzzer == "AFL" or fuzzer == "AFLFAST" or fuzzer == "FairFuzz" or fuzzer == "Radamsa":
         seed_path = save_path + "crashs/queue/"
-    elif fuzzer == "AFLFAST":
-        seed_path = save_path + "crashs/queue/"
+    # elif fuzzer == "AFLFAST":
+    #     seed_path = save_path + "crashs/queue/"
     elif fuzzer == "Libfuzz":
         seed_path = save_path + "seeds/"
     elif fuzzer == "Honggfuzz":
@@ -381,10 +410,10 @@ def get_seeds(jobname, fuzzer):  # 第二步。种子同步阶段分两步走，
     print("get_seeds")
     global seed_number
 
-    if fuzzer == "AFL":
+    if fuzzer == "AFL" or fuzzer == "AFLFAST" or fuzzer == "FairFuzz" or fuzzer == "Radamsa":
         seed_path = save_path + "crashs/queue/"
-    elif fuzzer == "AFLFAST":
-        seed_path = save_path + "crashs/queue/"
+    # elif fuzzer == "AFLFAST":
+    #     seed_path = save_path + "crashs/queue/"
     elif fuzzer == "Libfuzz":
         seed_path = save_path + "seeds/"
     elif fuzzer == "Honggfuzz":
@@ -487,9 +516,12 @@ if __name__ == '__main__':
 
         print("thread start")
         logger.info("fuzz process start!")
-        p1 = multiprocessing.Process(target=task_type, args=(job["type"], job["name"], jobfuzzer,\
+        if jobfuzzer == "QSYM":
+            qsym.fuzz(nowexec, save_path)  # 将主机的任务目录与docker的/home/test目录联系起来
+        else:
+            p1 = multiprocessing.Process(target=task_type, args=(job["type"], job["name"], jobfuzzer,\
                                  nowexec, runtime, surplusum, crashname))
-        p1.start()
+            p1.start()
         # time.sleep(80)
 
         # fuzz类型的信息同步/上传漏洞复现结果

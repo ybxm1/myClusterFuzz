@@ -74,7 +74,24 @@ def get_job():
     job = exec_sql(get_job_sql)
     if len(job) > 0:
         print(job[0])
-        resp = jsonify({"exist": "yes", "type": "fuzz", "name": job[0][1], "fuzzer": job[0][3],\
+        fuzzer = ""
+        if job[0][3] == "AFLFAST+QSYM":
+            if job[0][5] == job[0][6]:
+                fuzzer = fuzzer + "QSYM"
+            else:
+                fuzzer = fuzzer + "AFLFAST"
+        elif job[0][3] == "AFL+AFLFAST+Libfuzz+Radamsa":
+            if job[0][5] == 4:
+                fuzzer = fuzzer + "AFL"
+            elif job[0][5] == 3:
+                fuzzer = fuzzer + "AFLFAST"
+            elif job[0][5] == 2:
+                fuzzer = fuzzer + "Libfuzz"
+            else:
+                fuzzer = fuzzer + "Radamsa"
+        else:  # 普通模糊测试、目标点模糊测试
+            fuzzer = fuzzer + job[0][3]
+        resp = jsonify({"exist": "yes", "type": "fuzz", "name": job[0][1], "fuzzer": fuzzer,\
                         "time": job[0][7], "exec": job[0][8],  "surplusnum": job[0][5], "fuzztype": job[0][2]})
 
         job_update_sql = "update jobs set surplusnum = surplusnum - 1 where id = " + str(job[0][0])
